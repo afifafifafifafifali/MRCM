@@ -1,0 +1,5 @@
+ADDI x1,x0,5
+ADDI x2,x0,5
+AFIF x3,x2,x1
+NAWFEEL x18, x1, x2
+NOP
