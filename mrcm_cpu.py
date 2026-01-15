@@ -55,35 +55,42 @@ def memory(clk, mem_read_enable, mem_write_enable, mem_address, mem_write_data, 
 
     @always_comb
     def read_logic():
-        if mem_read_enable and 0 <= mem_address < size:
+        if mem_read_enable and 0 <= mem_address and mem_address < size:
             mem_read_data.next = mem_array[mem_address[10:0]]
         else:
             mem_read_data.next = 0
 
     @always_seq(clk.posedge, reset=None)
     def write_logic():
-        if mem_write_enable and 0 <= mem_address < size:
+        if mem_write_enable and 0 <= mem_address and mem_address < size:
             mem_array[mem_address[10:0]].next = mem_write_data
 
     return read_logic, write_logic
 
 @block
-def instruction_memory(pc, instruction, program=None):
+def instruction_memory(pc, instruction, program=None, rom_size=32):
     """
     @brief: instruction memory (rom)
     @param pc: program counter
     @param instruction: current instruction
     @param program: program to execute (optional, defaults to nops)
+    @param rom_size: size of the ROM (default 32 instructions)
     """
-    # default to 32 nops if no program provided
+    # For synthesis compatibility, the ROM must be defined at elaboration time
+    # We'll use the program parameter directly, assuming it's already processed
+    # by the calling code to be a tuple of the correct size
+
+    # If no program is provided, default to all NOPs
     if program is None:
-        program = [0x00000013] * 32
+        rom = tuple([0x00000013] * rom_size)
+    else:
+        rom = program  # Caller must ensure it's a tuple of correct size
 
     @always_comb
     def read_instr():
         addr = (pc - 4) // 4
-        if addr < len(program) and addr >= 0:
-            instruction.next = program[addr]
+        if addr < rom_size and addr >= 0:
+            instruction.next = rom[addr]
         else:
             instruction.next = 0x00000013
 
@@ -141,13 +148,9 @@ def cpu(clk, reset, pc_out, program=None, reg_read_port1=None, reg_read_port2=No
     # Use the program passed to the CPU constructor, default to empty if none provided
     instr_mem = instruction_memory(pc_reg, instr_reg, program)
 
-    # If monitoring signals are provided, use them; otherwise use internal signals
-    if reg_addr1 is not None and reg_addr2 is not None and reg_out1 is not None and reg_out2 is not None:
-        rf = regfile(clk, reg_write, rs1_addr, rs2_addr, rd_addr, reg_write_data, rs1_data, rs2_data,
-                     monitor_addr1=reg_addr1, monitor_addr2=reg_addr2,
-                     monitor_data1=reg_out1, monitor_data2=reg_out2)
-    else:
-        rf = regfile(clk, reg_write, rs1_addr, rs2_addr, rd_addr, reg_write_data, rs1_data, rs2_data)
+    # Instantiate the register file with only the required connections
+    # Skip the optional monitoring parameters to avoid synthesis issues
+    rf = regfile(clk, reg_write, rs1_addr, rs2_addr, rd_addr, reg_write_data, rs1_data, rs2_data)
     alu_inst = alu(alu_src_a, alu_src_b, alu_op, alu_result)
     mem = memory(clk, mem_read_enable, mem_write_enable, mem_address, mem_write_data, mem_read_data)
 
@@ -315,10 +318,10 @@ def cpu(clk, reset, pc_out, program=None, reg_read_port1=None, reg_read_port2=No
 
     @always_seq(clk.posedge, reset=None)
     def pc_update():
-        # manual reset handling since reset is a regular signal
-        if reset is not None and reset.val:
+        #reset is always a valid signal
+        if reset and reset.val:
             pc_reg.next = 4
-        elif jump:  # handle jumps for call, jmp, ret instructions
+        elif jump: 
             if alu_op == ALU_CALL:
                 # for call, target is pc + immediate (stored in immediate signal)
                 pc_reg.next = pc_reg + immediate
