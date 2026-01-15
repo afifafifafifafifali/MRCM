@@ -1,6 +1,6 @@
 # MRCM - A 64-bit RISC-like CPU
 
-MRC (Mithu Risc Computing Machine) A 64-bit RISC(Reduced Intrusction Set Computing) CPU implementation using MyHDL, based on RISC-V architecture principles.
+MRCM (Mithu Risc Computing Machine) A 64-bit RISC(Reduced Intrusction Set Computing) CPU implementation using MyHDL, based on RISC-V architecture principles. ** Please note that it is currently ROM(READ ONLY MEMORY) only CPU implementation. ** 
 
 ## Components
 
@@ -58,5 +58,5 @@ The CPU includes a complete assembler that supports:
 - Extended x86-like instructions
 - Symbolic labels for branches and function calls
 - DB (Define Byte) directive for data definition
-- Human-readable assembly syntax
+- Human-readable assembly syntax (kinda like basic ngl)
 - Memory layout: Instructions start at 0x4, data at 0x1000
