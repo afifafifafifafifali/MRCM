@@ -2,6 +2,10 @@
 
 MRCM (Mithu Risc Computing Machine) A 64-bit RISC(Reduced Intrusction Set Computing) CPU implementation using MyHDL, based on RISC-V architecture principles. **Please note that it is currently ROM(READ ONLY MEMORY) only CPU implementation.** 
 
+## Why on earth even make this?
+
+> Bored of school and lame software projects which will be replaced by  AI one day :sigh: 
+
 ## Components
 
 ### `alu.py`
