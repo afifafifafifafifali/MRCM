@@ -335,7 +335,7 @@ class Assembler:
 
             try:
                 instruction = self.assemble_line_with_labels(line, current_instruction_address)
-                if instruction is not None:
+                if instruction != None:
                     instructions.append(instruction)
                     current_instruction_address += 4
             except Exception as e:
@@ -551,10 +551,10 @@ class Assembler:
 
     def generate_python_list(self, instructions: List[int]) -> str:
         """Generate Python list from instructions."""
-        python_list = "[\n"
+        python_list = "(\n"
         for i, instr in enumerate(instructions):
             python_list += f"    0x{instr:08x},  \n"
-        python_list += "]"
+        python_list += f")+(0x00000013,) * {32-len(instructions)}"
         return python_list
 
 
@@ -593,3 +593,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # ADOLF AEAE
